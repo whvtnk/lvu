@@ -1,5 +1,7 @@
 # Love Heart
 
+**[Открыть онлайн](https://whvtnk.github.io/lvu/love-heart.html)**
+
 Анимированное сердце из слов на HTML5 Canvas. Всё в одном файле, без зависимостей.
 
 ## Запуск

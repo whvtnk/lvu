@@ -224,83 +224,92 @@ function toggleSettings(){
 }
 
 /* ===== RANDOM PRESET ===== */
-const PRESETS = [
-  { name:"Розовый огонь", color1:"#ff4488", colorGlow:"#ff0055", colorTitle:"#ffffff", bg:"#0a0005",
-    displayStyle:"glow", rotStyle:"pulse", waveType:"smooth", glowIntensity:80, rotSpeed:30, waveSpeed:50,
-    starsOn:true, starsColor:"#ffaacc", starsCount:250, scale:1.0, fontsize:11, fontStyle:"bold" },
-  { name:"Фиолетовый призрак", color1:"#cc66ff", colorGlow:"#7700cc", colorTitle:"#ddaaff", bg:"#07000f",
-    displayStyle:"ghost", rotStyle:"pendulum", waveType:"double", glowIntensity:60, rotSpeed:15, waveSpeed:35,
-    starsOn:true, starsColor:"#cc99ff", starsCount:300, scale:1.05, fontsize:10, fontStyle:"bold" },
-  { name:"Золотое сердце", color1:"#ffcc44", colorGlow:"#ff8800", colorTitle:"#fff0aa", bg:"#080400",
-    displayStyle:"volume3d", rotStyle:"uniform", waveType:"radial", glowIntensity:70, rotSpeed:18, waveSpeed:25,
-    starsOn:true, starsColor:"#ffdd88", starsCount:180, scale:1.1, fontsize:12, fontStyle:"bold" },
-  { name:"Ледяной контур", color1:"#88ddff", colorGlow:"#0099ff", colorTitle:"#ccf0ff", bg:"#000810",
-    displayStyle:"outline", rotStyle:"spiral", waveType:"smooth", glowIntensity:90, rotSpeed:22, waveSpeed:20,
-    starsOn:true, starsColor:"#aaeeff", starsCount:350, scale:0.95, fontsize:11, fontStyle:"normal" },
-  { name:"Красный хаос", color1:"#ff3322", colorGlow:"#ff0000", colorTitle:"#ffaaaa", bg:"#0c0000",
-    displayStyle:"double", rotStyle:"chaotic", waveType:"flash", glowIntensity:100, rotSpeed:50, waveSpeed:70,
-    starsOn:true, starsColor:"#ff6655", starsCount:150, scale:1.0, fontsize:10, fontStyle:"bold" },
-  { name:"Мятный сон", color1:"#44ffbb", colorGlow:"#00cc88", colorTitle:"#aaffdd", bg:"#000c07",
-    displayStyle:"glow", rotStyle:"pulse", waveType:"radial", glowIntensity:65, rotSpeed:20, waveSpeed:40,
-    starsOn:true, starsColor:"#88ffcc", starsCount:220, scale:1.0, fontsize:11, fontStyle:"italic" },
-  { name:"Тёмная роза", color1:"#ff6688", colorGlow:"#cc0044", colorTitle:"#ffccdd", bg:"#050005",
-    displayStyle:"volume3d", rotStyle:"spiral", waveType:"double", glowIntensity:55, rotSpeed:12, waveSpeed:28,
-    starsOn:true, starsColor:"#ff99bb", starsCount:280, scale:1.15, fontsize:13, fontStyle:"bold" },
-  { name:"Синяя магия", color1:"#4488ff", colorGlow:"#0033ff", colorTitle:"#aaccff", bg:"#00000f",
-    displayStyle:"glow", rotStyle:"pendulum", waveType:"random", glowIntensity:75, rotSpeed:25, waveSpeed:45,
-    starsOn:true, starsColor:"#88aaff", starsCount:400, scale:0.9, fontsize:10, fontStyle:"bold" },
-  { name:"Солнечный всплеск", color1:"#ffaa00", colorGlow:"#ff6600", colorTitle:"#ffeeaa", bg:"#080300",
-    displayStyle:"double", rotStyle:"pulse", waveType:"smooth", glowIntensity:85, rotSpeed:35, waveSpeed:55,
-    starsOn:true, starsColor:"#ffcc66", starsCount:200, scale:1.05, fontsize:11, fontStyle:"bold" },
-  { name:"Призрак ночи", color1:"#ff88cc", colorGlow:"#440022", colorTitle:"#ffccee", bg:"#02000a",
-    displayStyle:"ghost", rotStyle:"chaotic", waveType:"radial", glowIntensity:40, rotSpeed:8, waveSpeed:20,
-    starsOn:true, starsColor:"#cc88bb", starsCount:500, scale:1.0, fontsize:9, fontStyle:"italic" },
-];
+function rndInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function rndFrom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
-let lastPresetIdx = -1;
+// Generate a vivid random hue-based color with controlled brightness
+function rndColor(minL=45, maxL=75){
+  const h = rndInt(0,359);
+  const s = rndInt(70,100);
+  const l = rndInt(minL,maxL);
+  // hsl to hex
+  const a=s/100, ll=l/100;
+  const f=n=>{ const k=(n+h/30)%12; const c=a*Math.min(ll,1-ll); return Math.round(255*(ll-c*Math.max(-1,Math.min(k-3,9-k,1)))); };
+  return '#'+[f(0),f(8),f(4)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
 
-function setInput(id, val){
+// Dark background near-black with faint hue tint
+function rndBg(){
+  const h = rndInt(0,359);
+  const s = rndInt(30,80);
+  const l = rndInt(2,7);
+  const a=s/100, ll=l/100;
+  const f=n=>{ const k=(n+h/30)%12; const c=a*Math.min(ll,1-ll); return Math.round(255*(ll-c*Math.max(-1,Math.min(k-3,9-k,1)))); };
+  return '#'+[f(0),f(8),f(4)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+function setVal(id, val){
   const el = document.getElementById(id);
   if(!el) return;
   el.value = val;
 }
+function setSpan(id, val){ const el=document.getElementById(id); if(el) el.textContent=val; }
 
 function randomPreset(){
-  let idx;
-  do { idx = Math.floor(Math.random()*PRESETS.length); } while(idx === lastPresetIdx);
-  lastPresetIdx = idx;
-  const p = PRESETS[idx];
+  const color1    = rndColor(55, 80);
+  const colorGlow = rndColor(40, 65);
+  const colorTitle = rndColor(75, 95);
+  const starsColor = rndColor(65, 90);
+  const bg        = rndBg();
 
-  setInput('i-color1', p.color1);
-  setInput('i-colorGlow', p.colorGlow);
-  setInput('i-colorTitle', p.colorTitle);
-  setInput('i-bg', p.bg);
-  setInput('i-displayStyle', p.displayStyle);
-  setInput('i-rotStyle', p.rotStyle);
-  setInput('i-waveType', p.waveType);
-  setInput('i-glowIntensity', p.glowIntensity);
-  setInput('i-rotSpeed', p.rotSpeed);
-  setInput('i-waveSpeed', p.waveSpeed);
-  setInput('i-starsOn', null); document.getElementById('i-starsOn').checked = p.starsOn;
-  setInput('i-starsColor', p.starsColor);
-  setInput('i-starsCount', p.starsCount);
-  setInput('i-scale', Math.round(p.scale*100));
-  setInput('i-fontsize', p.fontsize);
-  setInput('i-fontStyle', p.fontStyle);
+  const displayStyle = rndFrom(['glow','ghost','volume3d','outline','double']);
+  const rotStyle     = rndFrom(['uniform','pendulum','pulse','chaotic','spiral']);
+  const waveType     = rndFrom(['smooth','flash','radial','double','random']);
+  const fontStyle    = rndFrom(['bold','normal','italic']);
+  const font         = rndFrom(['Arial','Georgia',"'Courier New'","'Times New Roman'",'Verdana']);
 
-  // update displayed values
-  document.getElementById('v-glow').textContent = p.glowIntensity;
-  document.getElementById('v-rotSpeed').textContent = p.rotSpeed;
-  document.getElementById('v-waveSpeed').textContent = p.waveSpeed;
-  document.getElementById('v-starsCount').textContent = p.starsCount;
-  document.getElementById('v-starsSpeed').textContent = cfg.starsSpeed;
-  document.getElementById('v-scale').textContent = Math.round(p.scale*100);
-  document.getElementById('v-fontsize').textContent = p.fontsize;
+  const glowIntensity = rndInt(30, 100);
+  const rotSpeed      = rndInt(5, 60);
+  const waveSpeed     = rndInt(10, 80);
+  const starsCount    = rndInt(80, 450);
+  const starsSpeed    = rndInt(15, 70);
+  const scale         = rndInt(80, 130);
+  const fontsize      = rndInt(8, 16);
+  const points        = rndInt(50, 150);
+  const opacity       = rndInt(75, 100);
+  const rotDir        = rndFrom([1, -1]);
 
-  // flash button with preset name
-  const btn = document.getElementById('random-btn');
-  btn.textContent = '✦ ' + p.name;
-  setTimeout(()=>{ btn.textContent = '✦ Случайный набор'; }, 2000);
+  setVal('i-color1', color1);
+  setVal('i-colorGlow', colorGlow);
+  setVal('i-colorTitle', colorTitle);
+  setVal('i-bg', bg);
+  setVal('i-starsColor', starsColor);
+  setVal('i-displayStyle', displayStyle);
+  setVal('i-rotStyle', rotStyle);
+  setVal('i-waveType', waveType);
+  setVal('i-fontStyle', fontStyle);
+  setVal('i-font', font);
+  setVal('i-glowIntensity', glowIntensity);
+  setVal('i-rotSpeed', rotSpeed);
+  setVal('i-rotDir', rotDir);
+  setVal('i-waveSpeed', waveSpeed);
+  setVal('i-starsCount', starsCount);
+  setVal('i-starsSpeed', starsSpeed);
+  setVal('i-scale', scale);
+  setVal('i-fontsize', fontsize);
+  setVal('i-points', points);
+  setVal('i-opacity', opacity);
+  document.getElementById('i-starsOn').checked = true;
+
+  setSpan('v-glow', glowIntensity);
+  setSpan('v-rotSpeed', rotSpeed);
+  setSpan('v-waveSpeed', waveSpeed);
+  setSpan('v-starsCount', starsCount);
+  setSpan('v-starsSpeed', starsSpeed);
+  setSpan('v-scale', scale);
+  setSpan('v-fontsize', fontsize);
+  setSpan('v-points', points);
+  setSpan('v-opacity', (opacity/100).toFixed(1));
 
   applyConfig();
 }

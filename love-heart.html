@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Love Heart</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;font-family:Arial,sans-serif;overflow:hidden;height:100vh;width:100vw;}
+
+#settings-toggle{position:fixed;top:14px;right:16px;z-index:200;background:rgba(255,255,255,0.07);border:1px solid rgba(255,100,150,0.35);color:rgba(255,180,210,0.9);padding:7px 14px;border-radius:20px;cursor:pointer;font-size:13px;transition:all .25s;}
+#settings-toggle:hover{background:rgba(255,60,100,0.25);}
+
+#settings{position:fixed;top:0;right:0;width:280px;height:100vh;background:rgba(10,0,15,0.97);border-left:1px solid rgba(255,80,120,0.25);z-index:150;padding:60px 20px 20px;overflow-y:auto;transform:translateX(100%);transition:transform .3s ease;}
+#settings.open{transform:translateX(0);}
+#settings h2{color:rgba(255,180,210,0.95);font-size:15px;font-weight:600;margin-bottom:18px;letter-spacing:.5px;}
+.sg{margin-bottom:14px;}
+.sg label{display:block;color:rgba(255,150,180,0.8);font-size:12px;margin-bottom:5px;}
+.sg input[type=text]{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,80,120,0.3);color:#fff;padding:7px 10px;border-radius:8px;font-size:13px;outline:none;}
+.sg input[type=text]:focus{border-color:rgba(255,100,150,0.7);}
+.sg input[type=range]{width:100%;accent-color:#ff6090;cursor:pointer;}
+.sg input[type=color]{width:100%;height:36px;background:none;border:1px solid rgba(255,80,120,0.3);border-radius:8px;cursor:pointer;padding:2px;}
+.sg select{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,80,120,0.3);color:#fff;padding:7px 10px;border-radius:8px;font-size:13px;outline:none;}
+.sg select option{background:#1a0010;}
+.sg .row{display:flex;gap:8px;align-items:center;}
+.sg .row input[type=checkbox]{accent-color:#ff6090;width:16px;height:16px;cursor:pointer;}
+.sep{border-top:1px solid rgba(255,80,120,0.18);margin:14px 0;}
+.sep-label{color:rgba(255,120,160,0.7);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.vd{color:rgba(255,200,220,0.6);font-size:11px;text-align:right;margin-top:2px;}
+
+canvas{display:block;}
+#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+#heart-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<canvas id="heart-canvas"></canvas>
+
+<button id="settings-toggle" onclick="toggleSettings()">⚙ Настройки</button>
+
+<div id="settings">
+  <h2>✦ Настройки</h2>
+
+  <div class="sep-label">Текст</div>
+  <div class="sg"><label>Слово на сердце</label><input type="text" id="i-text" value="I love you" oninput="applyConfig()"/></div>
+  <div class="sg"><label>Заголовок в центре</label><input type="text" id="i-title" value="I love you" oninput="applyConfig()"/></div>
+  <div class="sg"><label>Подзаголовок</label><input type="text" id="i-sub" value="my heart keeps choosing you" oninput="applyConfig()"/></div>
+  <div class="sg"><label class="row"><input type="checkbox" id="i-showTitle" checked onchange="applyConfig()"/> Показать текст в центре</label></div>
+  <div class="sg"><label>Шрифт</label>
+    <select id="i-font" onchange="applyConfig()">
+      <option value="Arial">Arial</option>
+      <option value="Georgia">Georgia</option>
+      <option value="'Courier New'">Courier New</option>
+      <option value="'Times New Roman'">Times New Roman</option>
+      <option value="Verdana">Verdana</option>
+    </select>
+  </div>
+  <div class="sg"><label>Стиль шрифта</label>
+    <select id="i-fontStyle" onchange="applyConfig()">
+      <option value="bold">Bold</option>
+      <option value="normal">Normal</option>
+      <option value="italic">Italic</option>
+    </select>
+  </div>
+  <div class="sg"><label>Размер шрифта: <span id="v-fontsize">11</span>px</label>
+    <input type="range" id="i-fontsize" min="6" max="24" value="11" oninput="applyConfig();document.getElementById('v-fontsize').textContent=this.value"/>
+  </div>
+
+  <div class="sep"></div>
+  <div class="sep-label">Цвета</div>
+  <div class="sg"><label>Основной цвет текста</label><input type="color" id="i-color1" value="#ff6090" oninput="applyConfig()"/></div>
+  <div class="sg"><label>Цвет свечения</label><input type="color" id="i-colorGlow" value="#ff1060" oninput="applyConfig()"/></div>
+  <div class="sg"><label>Цвет заголовка</label><input type="color" id="i-colorTitle" value="#ffffff" oninput="applyConfig()"/></div>
+  <div class="sg"><label>Цвет фона</label><input type="color" id="i-bg" value="#000000" oninput="applyConfig()"/></div>
+
+  <div class="sep"></div>
+  <div class="sep-label">Размер и форма</div>
+  <div class="sg"><label>Масштаб: <span id="v-scale">100</span>%</label>
+    <input type="range" id="i-scale" min="50" max="200" value="100" oninput="applyConfig();document.getElementById('v-scale').textContent=this.value"/>
+  </div>
+  <div class="sg"><label>Точек: <span id="v-points">80</span></label>
+    <input type="range" id="i-points" min="30" max="200" value="80" oninput="applyConfig();document.getElementById('v-points').textContent=this.value"/>
+  </div>
+  <div class="sg"><label>Растяжение по Y: <span id="v-stretchY">1.0</span></label>
+    <input type="range" id="i-stretchY" min="50" max="150" value="100" oninput="applyConfig();document.getElementById('v-stretchY').textContent=(this.value/100).toFixed(1)"/>
+  </div>
+  <div class="sg"><label>Смещение X: <span id="v-offsetX">0</span></label>
+    <input type="range" id="i-offsetX" min="-50" max="50" value="0" oninput="applyConfig();document.getElementById('v-offsetX').textContent=this.value"/>
+  </div>
+  <div class="sg"><label>Смещение Y: <span id="v-offsetY">0</span></label>
+    <input type="range" id="i-offsetY" min="-50" max="50" value="0" oninput="applyConfig();document.getElementById('v-offsetY').textContent=this.value"/>
+  </div>
+
+  <div class="sep"></div>
+  <div class="sep-label">Эффекты</div>
+  <div class="sg"><label>Стиль отображения</label>
+    <select id="i-displayStyle" onchange="applyConfig()">
+      <option value="glow">Glow — Светящееся</option>
+      <option value="ghost">Ghost — Призрачное</option>
+      <option value="volume3d">Volume 3D — Объёмное</option>
+      <option value="outline">Outline — Контур</option>
+      <option value="double">Double — Двойное</option>
+    </select>
+  </div>
+  <div class="sg"><label>Интенсивность свечения: <span id="v-glow">60</span></label>
+    <input type="range" id="i-glowIntensity" min="0" max="100" value="60" oninput="applyConfig();document.getElementById('v-glow').textContent=this.value"/>
+  </div>
+  <div class="sg"><label>Прозрачность: <span id="v-opacity">1.0</span></label>
+    <input type="range" id="i-opacity" min="20" max="100" value="100" oninput="applyConfig();document.getElementById('v-opacity').textContent=(this.value/100).toFixed(1)"/>
+  </div>
+  <div class="sg"><label>Размытие фона: <span id="v-bgBlur">0</span></label>
+    <input type="range" id="i-bgBlur" min="0" max="20" value="0" oninput="applyConfig();document.getElementById('v-bgBlur').textContent=this.value"/>
+  </div>
+
+  <div class="sep"></div>
+  <div class="sep-label">Вращение</div>
+  <div class="sg"><label>Скорость вращения: <span id="v-rotSpeed">20</span></label>
+    <input type="range" id="i-rotSpeed" min="0" max="100" value="20" oninput="applyConfig();document.getElementById('v-rotSpeed').textContent=this.value"/>
+  </div>
+  <div class="sg"><label>Направление вращения</label>
+    <select id="i-rotDir" onchange="applyConfig()">
+      <option value="1">По часовой</option>
+      <option value="-1">Против часовой</option>
+    </select>
+  </div>
+  <div class="sg"><label>Стиль вращения</label>
+    <select id="i-rotStyle" onchange="applyConfig()">
+      <option value="uniform">Uniform — Равномерное</option>
+      <option value="pendulum">Pendulum — Маятник</option>
+      <option value="pulse">Pulse — Пульс</option>
+      <option value="chaotic">Chaotic — Хаотичное</option>
+      <option value="spiral">Spiral — Спираль</option>
+    </select>
+  </div>
+
+  <div class="sep"></div>
+  <div class="sep-label">Волна</div>
+  <div class="sg"><label>Скорость волны: <span id="v-waveSpeed">30</span></label>
+    <input type="range" id="i-waveSpeed" min="0" max="100" value="30" oninput="applyConfig();document.getElementById('v-waveSpeed').textContent=this.value"/>
+  </div>
+  <div class="sg"><label>Тип волны</label>
+    <select id="i-waveType" onchange="applyConfig()">
+      <option value="smooth">Smooth — Плавная</option>
+      <option value="flash">Flash — Мигание</option>
+      <option value="radial">Radial — Радиальная</option>
+      <option value="double">Double — Двойная</option>
+      <option value="random">Random — Случайная</option>
+    </select>
+  </div>
+
+  <div class="sep"></div>
+  <div class="sep-label">Звёзды</div>
+  <div class="sg"><label class="row"><input type="checkbox" id="i-starsOn" checked onchange="applyConfig()"/> Показать звёзды</label></div>
+  <div class="sg"><label>Количество: <span id="v-starsCount">200</span></label>
+    <input type="range" id="i-starsCount" min="0" max="500" value="200" oninput="applyConfig();document.getElementById('v-starsCount').textContent=this.value"/>
+  </div>
+  <div class="sg"><label>Скорость: <span id="v-starsSpeed">40</span></label>
+    <input type="range" id="i-starsSpeed" min="0" max="100" value="40" oninput="applyConfig();document.getElementById('v-starsSpeed').textContent=this.value"/>
+  </div>
+  <div class="sg"><label>Цвет звёзд</label><input type="color" id="i-starsColor" value="#ffdcf0" oninput="applyConfig()"/></div>
+</div>
+
+<script>
+/* ===== CONFIG ===== */
+let cfg = {
+  text: "I love you", title: "I love you", sub: "my heart keeps choosing you",
+  showTitle: true, font: "Arial", fontsize: 11, fontStyle: "bold",
+  color1: "#ff6090", colorGlow: "#ff1060", colorTitle: "#ffffff", bg: "#000000",
+  glowIntensity: 60, scale: 1.0, points: 80,
+  offsetX: 0, offsetY: 0, stretchY: 1.0,
+  rotSpeed: 20, rotDir: 1, rotStyle: "uniform",
+  waveSpeed: 30, waveType: "smooth",
+  displayStyle: "glow", bgBlur: 0, opacity: 1.0,
+  starsCount: 200, starsSpeed: 40, starsColor: "#ffdcf0", starsOn: true
+};
+
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return {r,g,b};
+}
+
+function applyConfig(){
+  cfg.text       = document.getElementById('i-text').value || "I love you";
+  cfg.title      = document.getElementById('i-title').value;
+  cfg.sub        = document.getElementById('i-sub').value;
+  cfg.showTitle  = document.getElementById('i-showTitle').checked;
+  cfg.font       = document.getElementById('i-font').value;
+  cfg.fontStyle  = document.getElementById('i-fontStyle').value;
+  cfg.fontsize   = parseInt(document.getElementById('i-fontsize').value);
+  cfg.color1     = document.getElementById('i-color1').value;
+  cfg.colorGlow  = document.getElementById('i-colorGlow').value;
+  cfg.colorTitle = document.getElementById('i-colorTitle').value;
+  cfg.bg         = document.getElementById('i-bg').value;
+  cfg.glowIntensity = parseInt(document.getElementById('i-glowIntensity').value);
+  cfg.scale      = parseInt(document.getElementById('i-scale').value) / 100;
+  cfg.points     = parseInt(document.getElementById('i-points').value);
+  cfg.stretchY   = parseInt(document.getElementById('i-stretchY').value) / 100;
+  cfg.offsetX    = parseInt(document.getElementById('i-offsetX').value) / 100;
+  cfg.offsetY    = parseInt(document.getElementById('i-offsetY').value) / 100;
+  cfg.displayStyle = document.getElementById('i-displayStyle').value;
+  cfg.opacity    = parseInt(document.getElementById('i-opacity').value) / 100;
+  cfg.bgBlur     = parseInt(document.getElementById('i-bgBlur').value);
+  cfg.rotSpeed   = parseInt(document.getElementById('i-rotSpeed').value);
+  cfg.rotDir     = parseInt(document.getElementById('i-rotDir').value);
+  cfg.rotStyle   = document.getElementById('i-rotStyle').value;
+  cfg.waveSpeed  = parseInt(document.getElementById('i-waveSpeed').value);
+  cfg.waveType   = document.getElementById('i-waveType').value;
+  cfg.starsOn    = document.getElementById('i-starsOn').checked;
+  cfg.starsCount = parseInt(document.getElementById('i-starsCount').value);
+  cfg.starsSpeed = parseInt(document.getElementById('i-starsSpeed').value);
+  cfg.starsColor = document.getElementById('i-starsColor').value;
+}
+
+function toggleSettings(){
+  document.getElementById('settings').classList.toggle('open');
+}
+
+/* ===== STARS ===== */
+const sc = document.getElementById('stars');
+const sx = sc.getContext('2d');
+let stars = [];
+
+function buildStars(){
+  stars = Array.from({length: cfg.starsCount}, () => ({
+    x: Math.random()*sc.width, y: Math.random()*sc.height,
+    r: Math.random()*1.5+0.3, a: Math.random(), da: (Math.random()-.5)*.015
+  }));
+}
+
+function resizeStars(){
+  sc.width = window.innerWidth; sc.height = window.innerHeight;
+  buildStars();
+}
+resizeStars();
+window.addEventListener('resize', resizeStars);
+
+let lastStarCount = cfg.starsCount;
+
+function drawStars(){
+  if(!cfg.starsOn){ sx.clearRect(0,0,sc.width,sc.height); return; }
+  if(cfg.starsCount !== lastStarCount){ buildStars(); lastStarCount = cfg.starsCount; }
+  const sc2 = hexToRgb(cfg.starsColor);
+  sx.clearRect(0,0,sc.width,sc.height);
+  const speedFactor = cfg.starsSpeed * 0.0004;
+  stars.forEach(s=>{
+    s.a += s.da * (1 + speedFactor * 20);
+    if(s.a<0||s.a>1) s.da*=-1;
+    sx.beginPath(); sx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    sx.fillStyle=`rgba(${sc2.r},${sc2.g},${sc2.b},${s.a*0.55})`; sx.fill();
+  });
+}
+
+/* ===== HEART MATH ===== */
+function hx(t){ return 16*Math.pow(Math.sin(t),3); }
+function hy(t){ return 13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t); }
+
+/* ===== CANVAS SETUP ===== */
+const hc = document.getElementById('heart-canvas');
+const ctx = hc.getContext('2d');
+
+function resizeHeart(){
+  hc.width = window.innerWidth * devicePixelRatio;
+  hc.height = window.innerHeight * devicePixelRatio;
+}
+resizeHeart();
+window.addEventListener('resize', resizeHeart);
+
+/* ===== STATE ===== */
+let state = { angle: 0, wave: 0, chaoticV: 0, time: 0 };
+
+/* ===== WAVE ===== */
+function getWave(i, N){
+  const w = state.wave;
+  switch(cfg.waveType){
+    case 'smooth':  return (Math.sin(i * (2*Math.PI/N) * 2 + w) + 1) / 2;
+    case 'flash':   return Math.abs(Math.sin(w * 3)) > 0.5 ? 1 : 0.2;
+    case 'radial':  return (Math.sin(i * 0.3 + w) + 1) / 2;
+    case 'double':  return (Math.sin(i*0.2+w)*Math.cos(i*0.07+w*0.5)+1)/2;
+    case 'random':  return 0.3 + Math.abs(Math.sin(i*7.3+w*2.1)) * 0.7;
+    default:        return (Math.sin(i*0.13+w)+1)/2;
+  }
+}
+
+/* ===== DRAW HEART ===== */
+function drawHeart(){
+  const W = hc.width / devicePixelRatio;
+  const H = hc.height / devicePixelRatio;
+
+  ctx.save();
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  // background
+  const bg = hexToRgb(cfg.bg);
+  if(cfg.bgBlur > 0){
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = `rgb(${bg.r},${bg.g},${bg.b})`;
+  } else {
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = `rgb(${bg.r},${bg.g},${bg.b})`;
+  }
+  ctx.fillRect(0,0,W,H);
+  ctx.globalAlpha = 1;
+
+  const cx = W/2 + cfg.offsetX*W;
+  const cy = H/2 + cfg.offsetY*H;
+  const sc2 = Math.min(W,H)/22 * cfg.scale;
+  const N = cfg.points;
+  const c1 = hexToRgb(cfg.color1);
+  const cg = hexToRgb(cfg.colorGlow);
+  const ct = hexToRgb(cfg.colorTitle);
+  const glowBlur = cfg.glowIntensity * 0.3;
+  const op = cfg.opacity;
+
+  // rotation
+  let dAngle = cfg.rotSpeed * 0.00025 * cfg.rotDir;
+  if(cfg.rotStyle === 'pendulum'){
+    dAngle = Math.sin(state.time * 0.03) * cfg.rotSpeed * 0.0005;
+  } else if(cfg.rotStyle === 'pulse'){
+    dAngle = (0.5 + 0.5*Math.abs(Math.sin(state.time*0.05))) * cfg.rotSpeed * 0.0004 * cfg.rotDir;
+  } else if(cfg.rotStyle === 'chaotic'){
+    state.chaoticV += (Math.random()-0.5)*0.003;
+    state.chaoticV *= 0.97;
+    dAngle = state.chaoticV * cfg.rotSpeed * 0.1;
+  } else if(cfg.rotStyle === 'spiral'){
+    dAngle = cfg.rotSpeed * 0.0003 * cfg.rotDir * (1 + Math.sin(state.time*0.02)*0.5);
+  }
+
+  switch(cfg.displayStyle){
+
+    case 'glow': {
+      for(let i=0;i<N;i++){
+        const t = i*(2*Math.PI/N) + state.angle;
+        const px = hx(t)*sc2 + cx;
+        const py = -hy(t)*sc2*cfg.stretchY + cy;
+        const fade = getWave(i, N);
+        const alpha = op * (0.5 + 0.5*fade);
+        const fsize = cfg.fontsize + Math.round(cfg.fontsize*0.5*fade);
+        ctx.save();
+        ctx.shadowColor = `rgba(${cg.r},${cg.g},${cg.b},0.85)`;
+        ctx.shadowBlur = glowBlur + 8*fade;
+        ctx.font = `${cfg.fontStyle} ${fsize}px ${cfg.font}`;
+        ctx.fillStyle = `rgba(${c1.r},${c1.g},${c1.b},${alpha})`;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(cfg.text, px, py);
+        ctx.restore();
+      }
+      // center radial glow
+      const grd = ctx.createRadialGradient(cx,cy,0,cx,cy,sc2*2.2);
+      grd.addColorStop(0,`rgba(${cg.r},${cg.g},${cg.b},0.18)`);
+      grd.addColorStop(1,'transparent');
+      ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
+      break;
+    }
+
+    case 'ghost': {
+      for(let i=0;i<N;i++){
+        const t = i*(2*Math.PI/N) + state.angle;
+        const fade = getWave(i, N);
+        const spread = 1 + fade*0.3;
+        const px = hx(t)*sc2*spread + cx;
+        const py = -hy(t)*sc2*cfg.stretchY*spread + cy;
+        const alpha = op * (0.25 + 0.7*fade);
+        const fsize = Math.round(cfg.fontsize*(0.75+0.5*fade));
+        ctx.save();
+        ctx.shadowColor = `rgba(${cg.r},${cg.g},${cg.b},0.5)`;
+        ctx.shadowBlur = fade>0.6 ? glowBlur*0.6 : 2;
+        ctx.font = `${cfg.fontStyle} ${fsize}px ${cfg.font}`;
+        ctx.fillStyle = `rgba(${c1.r},${c1.g},${c1.b},${alpha})`;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(cfg.text, px, py);
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'volume3d': {
+      const layers = 8;
+      for(let layer=0;layer<layers;layer++){
+        const df = 1 - layer*0.04;
+        const yOff = layer*3.5;
+        const lAlpha = op * ((1-layer/layers)*0.9+0.08);
+        const light = 1-layer*0.08;
+        for(let i=0;i<N;i++){
+          const t = i*(2*Math.PI/N)+state.angle+layer*0.025;
+          const px = hx(t)*sc2*df + cx;
+          const py = -hy(t)*sc2*cfg.stretchY*df + cy + yOff;
+          const fade = getWave(i, N);
+          const alpha = lAlpha*(0.5+0.5*fade);
+          const fsize = Math.round(cfg.fontsize*df*(0.8+0.35*fade));
+          const r=Math.round(c1.r*light), g=Math.round(c1.g*light), b=Math.round(c1.b*light);
+          ctx.save();
+          if(layer<2){ ctx.shadowColor=`rgba(${cg.r},${cg.g},${cg.b},0.55)`; ctx.shadowBlur=glowBlur*0.5; }
+          ctx.font=`${cfg.fontStyle} ${fsize}px ${cfg.font}`;
+          ctx.fillStyle=`rgba(${r},${g},${b},${alpha})`;
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(cfg.text, px, py);
+          ctx.restore();
+        }
+      }
+      break;
+    }
+
+    case 'outline': {
+      for(let i=0;i<N;i++){
+        const t = i*(2*Math.PI/N)+state.angle;
+        const px = hx(t)*sc2 + cx;
+        const py = -hy(t)*sc2*cfg.stretchY + cy;
+        const fade = getWave(i, N);
+        const alpha = op*(0.6+0.4*fade);
+        const fsize = cfg.fontsize;
+        ctx.save();
+        ctx.font=`${cfg.fontStyle} ${fsize}px ${cfg.font}`;
+        ctx.strokeStyle=`rgba(${c1.r},${c1.g},${c1.b},${alpha})`;
+        ctx.lineWidth=0.7;
+        ctx.shadowColor=`rgba(${cg.r},${cg.g},${cg.b},0.6)`;
+        ctx.shadowBlur=glowBlur*0.5+4*fade;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.strokeText(cfg.text, px, py);
+        ctx.restore();
+      }
+      break;
+    }
+
+    case 'double': {
+      const offsets = [-3, 3];
+      offsets.forEach((off, oi) => {
+        for(let i=0;i<N;i++){
+          const t = i*(2*Math.PI/N)+state.angle;
+          const px = hx(t)*sc2 + cx + off;
+          const py = -hy(t)*sc2*cfg.stretchY + cy + off*0.5;
+          const fade = getWave(i, N);
+          const alpha = op*(0.4+0.5*fade)*(oi===0?0.7:1);
+          const fsize = cfg.fontsize;
+          ctx.save();
+          ctx.shadowColor=`rgba(${cg.r},${cg.g},${cg.b},0.7)`;
+          ctx.shadowBlur=glowBlur*0.6+6*fade;
+          ctx.font=`${cfg.fontStyle} ${fsize}px ${cfg.font}`;
+          ctx.fillStyle=`rgba(${c1.r},${c1.g},${c1.b},${alpha})`;
+          ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(cfg.text, px, py);
+          ctx.restore();
+        }
+      });
+      break;
+    }
+  }
+
+  // center title
+  if(cfg.showTitle){
+    ctx.save();
+    ctx.shadowColor=`rgba(${ct.r},${ct.g},${ct.b},0.9)`;
+    ctx.shadowBlur=18;
+    const titleSize = Math.round(sc2*1.05);
+    ctx.font=`bold ${titleSize}px ${cfg.font}`;
+    ctx.fillStyle=`rgba(${ct.r},${ct.g},${ct.b},${op})`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(cfg.title, cx, cy - sc2*0.22);
+    ctx.font=`${Math.round(sc2*0.52)}px ${cfg.font}`;
+    ctx.fillStyle=`rgba(${c1.r},${c1.g},${c1.b},${op*0.85})`;
+    ctx.fillText(cfg.sub, cx, cy + sc2*0.46);
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  // update state
+  state.angle += dAngle;
+  state.wave  += cfg.waveSpeed * 0.0008;
+  state.time  += 1;
+}
+
+/* ===== MAIN LOOP ===== */
+function loop(){
+  drawStars();
+  drawHeart();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

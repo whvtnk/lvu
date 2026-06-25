@@ -27,6 +27,9 @@ body{background:#000;font-family:Arial,sans-serif;overflow:hidden;height:100vh;w
 .sep{border-top:1px solid rgba(255,80,120,0.18);margin:14px 0;}
 .sep-label{color:rgba(255,120,160,0.7);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
 .vd{color:rgba(255,200,220,0.6);font-size:11px;text-align:right;margin-top:2px;}
+#random-btn{width:100%;padding:11px;background:linear-gradient(135deg,rgba(255,60,120,0.35),rgba(180,0,100,0.35));border:1px solid rgba(255,100,150,0.6);color:#fff;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;letter-spacing:.5px;transition:all .25s;margin-top:4px;}
+#random-btn:hover{background:linear-gradient(135deg,rgba(255,60,120,0.6),rgba(180,0,100,0.6));box-shadow:0 0 18px rgba(255,80,120,0.4);transform:translateY(-1px);}
+#random-btn:active{transform:translateY(0);}
 
 canvas{display:block;}
 #stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
@@ -160,6 +163,9 @@ canvas{display:block;}
     <input type="range" id="i-starsSpeed" min="0" max="100" value="40" oninput="applyConfig();document.getElementById('v-starsSpeed').textContent=this.value"/>
   </div>
   <div class="sg"><label>Цвет звёзд</label><input type="color" id="i-starsColor" value="#ffdcf0" oninput="applyConfig()"/></div>
+
+  <div class="sep"></div>
+  <button id="random-btn" onclick="randomPreset()">✦ Случайный набор</button>
 </div>
 
 <script>
@@ -215,6 +221,88 @@ function applyConfig(){
 
 function toggleSettings(){
   document.getElementById('settings').classList.toggle('open');
+}
+
+/* ===== RANDOM PRESET ===== */
+const PRESETS = [
+  { name:"Розовый огонь", color1:"#ff4488", colorGlow:"#ff0055", colorTitle:"#ffffff", bg:"#0a0005",
+    displayStyle:"glow", rotStyle:"pulse", waveType:"smooth", glowIntensity:80, rotSpeed:30, waveSpeed:50,
+    starsOn:true, starsColor:"#ffaacc", starsCount:250, scale:1.0, fontsize:11, fontStyle:"bold" },
+  { name:"Фиолетовый призрак", color1:"#cc66ff", colorGlow:"#7700cc", colorTitle:"#ddaaff", bg:"#07000f",
+    displayStyle:"ghost", rotStyle:"pendulum", waveType:"double", glowIntensity:60, rotSpeed:15, waveSpeed:35,
+    starsOn:true, starsColor:"#cc99ff", starsCount:300, scale:1.05, fontsize:10, fontStyle:"bold" },
+  { name:"Золотое сердце", color1:"#ffcc44", colorGlow:"#ff8800", colorTitle:"#fff0aa", bg:"#080400",
+    displayStyle:"volume3d", rotStyle:"uniform", waveType:"radial", glowIntensity:70, rotSpeed:18, waveSpeed:25,
+    starsOn:true, starsColor:"#ffdd88", starsCount:180, scale:1.1, fontsize:12, fontStyle:"bold" },
+  { name:"Ледяной контур", color1:"#88ddff", colorGlow:"#0099ff", colorTitle:"#ccf0ff", bg:"#000810",
+    displayStyle:"outline", rotStyle:"spiral", waveType:"smooth", glowIntensity:90, rotSpeed:22, waveSpeed:20,
+    starsOn:true, starsColor:"#aaeeff", starsCount:350, scale:0.95, fontsize:11, fontStyle:"normal" },
+  { name:"Красный хаос", color1:"#ff3322", colorGlow:"#ff0000", colorTitle:"#ffaaaa", bg:"#0c0000",
+    displayStyle:"double", rotStyle:"chaotic", waveType:"flash", glowIntensity:100, rotSpeed:50, waveSpeed:70,
+    starsOn:true, starsColor:"#ff6655", starsCount:150, scale:1.0, fontsize:10, fontStyle:"bold" },
+  { name:"Мятный сон", color1:"#44ffbb", colorGlow:"#00cc88", colorTitle:"#aaffdd", bg:"#000c07",
+    displayStyle:"glow", rotStyle:"pulse", waveType:"radial", glowIntensity:65, rotSpeed:20, waveSpeed:40,
+    starsOn:true, starsColor:"#88ffcc", starsCount:220, scale:1.0, fontsize:11, fontStyle:"italic" },
+  { name:"Тёмная роза", color1:"#ff6688", colorGlow:"#cc0044", colorTitle:"#ffccdd", bg:"#050005",
+    displayStyle:"volume3d", rotStyle:"spiral", waveType:"double", glowIntensity:55, rotSpeed:12, waveSpeed:28,
+    starsOn:true, starsColor:"#ff99bb", starsCount:280, scale:1.15, fontsize:13, fontStyle:"bold" },
+  { name:"Синяя магия", color1:"#4488ff", colorGlow:"#0033ff", colorTitle:"#aaccff", bg:"#00000f",
+    displayStyle:"glow", rotStyle:"pendulum", waveType:"random", glowIntensity:75, rotSpeed:25, waveSpeed:45,
+    starsOn:true, starsColor:"#88aaff", starsCount:400, scale:0.9, fontsize:10, fontStyle:"bold" },
+  { name:"Солнечный всплеск", color1:"#ffaa00", colorGlow:"#ff6600", colorTitle:"#ffeeaa", bg:"#080300",
+    displayStyle:"double", rotStyle:"pulse", waveType:"smooth", glowIntensity:85, rotSpeed:35, waveSpeed:55,
+    starsOn:true, starsColor:"#ffcc66", starsCount:200, scale:1.05, fontsize:11, fontStyle:"bold" },
+  { name:"Призрак ночи", color1:"#ff88cc", colorGlow:"#440022", colorTitle:"#ffccee", bg:"#02000a",
+    displayStyle:"ghost", rotStyle:"chaotic", waveType:"radial", glowIntensity:40, rotSpeed:8, waveSpeed:20,
+    starsOn:true, starsColor:"#cc88bb", starsCount:500, scale:1.0, fontsize:9, fontStyle:"italic" },
+];
+
+let lastPresetIdx = -1;
+
+function setInput(id, val){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.value = val;
+}
+
+function randomPreset(){
+  let idx;
+  do { idx = Math.floor(Math.random()*PRESETS.length); } while(idx === lastPresetIdx);
+  lastPresetIdx = idx;
+  const p = PRESETS[idx];
+
+  setInput('i-color1', p.color1);
+  setInput('i-colorGlow', p.colorGlow);
+  setInput('i-colorTitle', p.colorTitle);
+  setInput('i-bg', p.bg);
+  setInput('i-displayStyle', p.displayStyle);
+  setInput('i-rotStyle', p.rotStyle);
+  setInput('i-waveType', p.waveType);
+  setInput('i-glowIntensity', p.glowIntensity);
+  setInput('i-rotSpeed', p.rotSpeed);
+  setInput('i-waveSpeed', p.waveSpeed);
+  setInput('i-starsOn', null); document.getElementById('i-starsOn').checked = p.starsOn;
+  setInput('i-starsColor', p.starsColor);
+  setInput('i-starsCount', p.starsCount);
+  setInput('i-scale', Math.round(p.scale*100));
+  setInput('i-fontsize', p.fontsize);
+  setInput('i-fontStyle', p.fontStyle);
+
+  // update displayed values
+  document.getElementById('v-glow').textContent = p.glowIntensity;
+  document.getElementById('v-rotSpeed').textContent = p.rotSpeed;
+  document.getElementById('v-waveSpeed').textContent = p.waveSpeed;
+  document.getElementById('v-starsCount').textContent = p.starsCount;
+  document.getElementById('v-starsSpeed').textContent = cfg.starsSpeed;
+  document.getElementById('v-scale').textContent = Math.round(p.scale*100);
+  document.getElementById('v-fontsize').textContent = p.fontsize;
+
+  // flash button with preset name
+  const btn = document.getElementById('random-btn');
+  btn.textContent = '✦ ' + p.name;
+  setTimeout(()=>{ btn.textContent = '✦ Случайный набор'; }, 2000);
+
+  applyConfig();
 }
 
 /* ===== STARS ===== */

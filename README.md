@@ -6,19 +6,17 @@
 
 ## Демо
 
-
 https://github.com/user-attachments/assets/9295bd77-7cee-4c28-add6-08271b1b9e4d
-
 
 ## Варианты оформления
 
 | Glow | Ghost | Double |
 |---|---|---|
-| ![Розовый Glow](Screenshots\pink-glow.png) | ![Фиолетовый Ghost]("C:\Users\ulant\OneDrive\Pictures\Screenshots\purple-ghost.png") | ![Золотой Double]("C:\Users\ulant\OneDrive\Pictures\Screenshots\gold-double.png") |
+| ![Розовый Glow](screenshots/pink-glow.png) | ![Фиолетовый Ghost](screenshots/purple-ghost.png) | ![Золотой Double](screenshots/gold-double.png) |
 
 | Приглушённый | Синий Glow |
 |---|---|
-| ![Вариант 1]("C:\Users\ulant\OneDrive\Pictures\Screenshots\1.png") | ![Вариант 2]("C:\Users\ulant\OneDrive\Pictures\Screenshots\2.png") |
+| ![Вариант 1](screenshots/1.png) | ![Вариант 2](screenshots/2.png) |
 
 ## Запуск
 

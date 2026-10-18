@@ -14,7 +14,7 @@ https://github.com/user-attachments/assets/9295bd77-7cee-4c28-add6-08271b1b9e4d
 
 | Glow | Ghost | Double |
 |---|---|---|
-| ![Розовый Glow]("C:\Users\ulant\OneDrive\Pictures\Screenshots\pink-glow.png") | ![Фиолетовый Ghost]("C:\Users\ulant\OneDrive\Pictures\Screenshots\purple-ghost.png") | ![Золотой Double]("C:\Users\ulant\OneDrive\Pictures\Screenshots\gold-double.png") |
+| ![Розовый Glow](Screenshots\pink-glow.png) | ![Фиолетовый Ghost]("C:\Users\ulant\OneDrive\Pictures\Screenshots\purple-ghost.png") | ![Золотой Double]("C:\Users\ulant\OneDrive\Pictures\Screenshots\gold-double.png") |
 
 | Приглушённый | Синий Glow |
 |---|---|
